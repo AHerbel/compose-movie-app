@@ -1,18 +1,16 @@
 package com.aherbel.movieapp
 
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.animatedFloat
 import androidx.compose.animation.asDisposableClock
 import androidx.compose.animation.core.AnimatedFloat
-import androidx.compose.animation.core.AnimationClockObservable
 import androidx.compose.animation.core.TargetAnimation
 import androidx.compose.foundation.*
 import androidx.compose.foundation.animation.FlingConfig
 import androidx.compose.foundation.animation.FloatAndroidFlingDecaySpec
-import androidx.compose.foundation.gestures.ScrollableController
-import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.animation.fling
+import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -148,6 +146,7 @@ fun Home() {
             Carousel(movies, posterSpacingDp, contentPaddingDp, carouselState) { movie ->
                 MoviePoster(movie)
             }
+            Spacer(Modifier.height(24.dp))
         }
     }
 }
@@ -174,9 +173,10 @@ fun <T> Carousel(
             .fillMaxWidth()
             .padding(bottom = 48.dp)
             .padding(horizontal = contentPadding)
-            .scrollable(
+            .draggable(
                 orientation = Orientation.Horizontal,
-                controller = state.scrollableController
+                onDrag = { state.onDrag(it) },
+                onDragStopped = { state.fling(it) },
             )
     ) {
         items.forEachIndexed { index, item ->
@@ -383,9 +383,52 @@ fun rememberCarouselState(): CarouselState {
         CarouselState(
             density,
             animatedOffset,
-            clock,
         )
     }
+}
+
+class CarouselState(
+    private val density: Density,
+    internal val animatedOffset: AnimatedFloat,
+) {
+    
+    private val flingConfig = FlingConfig(FloatAndroidFlingDecaySpec(density)) { adjustTarget(it) }
+    
+    private var itemCount: Int = 0
+    internal var itemSpacingPx: Float = 0f
+    
+    private val upperBound: Float = 0f
+    private val lowerBound: Float get() = -1 * (itemCount - 1) * itemSpacingPx
+    
+    val selectedIndex: Int get() = offsetToIndex(animatedOffset.value, itemSpacingPx)
+    
+    internal fun onDrag(delta: Float) {
+        var target = animatedOffset.value + delta
+        when {
+            target > upperBound -> {
+                target = upperBound
+            }
+            target < lowerBound -> {
+                target = lowerBound
+            }
+        }
+        animatedOffset.snapTo(target)
+    }
+    
+    internal fun fling(velocity: Float) {
+        animatedOffset.fling(velocity, flingConfig)
+    }
+    
+    internal fun update(itemsCount: Int, itemSpacing: Dp) {
+        itemCount = itemsCount
+        itemSpacingPx = with(density) { itemSpacing.toPx() }
+        animatedOffset.setBounds(lowerBound, upperBound)
+    }
+    
+    private fun adjustTarget(target: Float): TargetAnimation {
+        return TargetAnimation((target / itemSpacingPx).roundToInt() * itemSpacingPx)
+    }
+    
 }
 
 fun Modifier.offset(
@@ -408,129 +451,9 @@ fun Modifier.offset(
     }
 }
 
-class CarouselState(
-    private val density: Density,
-    internal val animatedOffset: AnimatedFloat,
-    clock: AnimationClockObservable,
-) {
-    
-    private val flingConfig = FlingConfig(FloatAndroidFlingDecaySpec(density)) { adjustTarget(it) }
-    internal val scrollableController = ScrollableController({ consumeScrollDelta(it) }, flingConfig, clock)
-    
-    private var itemCount: Int = 0
-    internal var itemSpacingPx: Float = 0f
-    
-    private val upperBound: Float = 0f
-    private val lowerBound: Float get() = -1 * (itemCount - 1) * itemSpacingPx
-    
-    val selectedIndex: Int get() = offsetToIndex(animatedOffset.value, itemSpacingPx)
-    
-    internal fun update(itemsCount: Int, itemSpacing: Dp) {
-        itemCount = itemsCount
-        itemSpacingPx = with(density) { itemSpacing.toPx() }
-    }
-    
-    private fun adjustTarget(target: Float): TargetAnimation {
-        val indexFloat = target / itemSpacingPx
-        val index = indexFloat.roundToInt()
-        val finalValue = index * itemSpacingPx
-        Log.e("CAROUSEL",
-              "FLING target=$target, finalValue=$finalValue, index=$index, indexFloat=$indexFloat, spacingPx=$itemSpacingPx")
-        return TargetAnimation(finalValue)
-    }
-    
-    private fun consumeScrollDelta(delta: Float): Float {
-        var target = animatedOffset.value + delta
-        var consumed = delta
-        when {
-            target > upperBound -> {
-                consumed = upperBound - animatedOffset.value
-                target = upperBound
-            }
-            target < lowerBound -> {
-                consumed = lowerBound - animatedOffset.value
-                target = lowerBound
-            }
-        }
-        animatedOffset.snapTo(target)
-        Log.e("CAROUSEL", "SCROLL delta=$delta, target=$target, consumed=$consumed")
-        return consumed
-    }
-    
-}
-
-private val roundedCornerShape = RoundedCornerShape(16.dp)
-
 fun lerp(start: Float, stop: Float, fraction: Float): Float {
     return (1 - fraction) * start + fraction * stop
 }
 
 private fun offsetToIndex(offset: Float, spacingPx: Float): Int =
     round(-1 * offset / spacingPx).toInt()
-
-private val movies = listOf(
-    Movie(
-        name = "Joker",
-        year = 2019,
-        genres = listOf("Crime", "Drama", "Thriller"),
-        soundsMix = listOf("Datasat", "Dolby Digital"),
-        imageUrl = "https://cdn.shopify.com/s/files/1/0969/9128/products/Joker_-_Put_On_A_Happy_Face_-_Joaquin_Phoenix_-_Hollywood_English_Movie_Poster_3_de5e4cfc-cfd4-4732-aad1-271d6bdb1587.jpg?v=1579504979",
-        score = 8.5f,
-        ageClasification = 18,
-        category = "POPULAR WITH FRIENDS",
-        tags = listOf("NEW", "MOVIE"),
-    ),
-    Movie(
-        name = "The Lord Of The Rings: The Fellowship of the Ring",
-        year = 2001,
-        genres = listOf("Action", "Adventure", "Drama", "Fantasy"),
-        soundsMix = listOf("DTS", "Dolby Digital", "EX", "SDDS", "Dolby Atmos"),
-        imageUrl = "https://i.pinimg.com/originals/5d/4b/e6/5d4be66e120f0ecfb3b097235fde82fb.jpg",
-        score = 8.8f,
-        ageClasification = 12,
-        category = "ANTHOLOGY",
-        tags = listOf("COLLECTION", "TOLKIEN"),
-    ),
-    Movie(
-        name = "Harry Potter And The Deadly Hallows - Part 2",
-        year = 2011,
-        genres = listOf("Adventure", "Drama", "Fantasy", "Mystery"),
-        soundsMix = listOf("Dolby Digital", "Datastat", "Dolby Surround 7.1", "SDDS", "Sonics-DDP", "DTS"),
-        imageUrl = "https://cdn.shopify.com/s/files/1/2372/3627/products/HarryPotter_theDeathlyHallowsPt2_1024x.jpg?v=1586793835",
-        score = 8.1f,
-        ageClasification = 7,
-        category = "MOST VIEWED",
-        tags = listOf("MAGIC", "KIDS"),
-    ),
-    Movie(
-        name = "Iron Man 3",
-        year = 2013,
-        genres = listOf("Action", "Adventure", "Sci-Fi"),
-        soundsMix = listOf("Dolby Digital", "Datastat", "Dolby Atmos", "Dolby Surround 7.1", "SDDS"),
-        imageUrl = "https://i.pinimg.com/originals/a0/76/df/a076df1ab6dcd44ac9b5be4d34731d17.jpg",
-        score = 7.1f,
-        ageClasification = 12,
-        category = "SUPERHEROES",
-        tags = listOf("MARVEL"),
-    ),
-    Movie(
-        name = "Avengers: End Game",
-        year = 2019,
-        genres = listOf("Action", "Adventure", "Drama", "Sci-Fi"),
-        soundsMix = listOf("Dolby Digital",
-                           "Auro 11.1",
-                           "Dolby Atmos",
-                           "Dolby Surround 7.1",
-                           "DTS",
-                           "Dolby Digital",
-                           "Sonics-DDP",
-                           "12-Track Digital Sound",
-                           "IMAX 6-Track",
-                           "SDDS"),
-        imageUrl = "https://i.pinimg.com/originals/92/c8/e0/92c8e00b34fcfdeaf605a0647c21adb3.jpg",
-        score = 8.4f,
-        ageClasification = 7,
-        category = "SUPERHEROES",
-        tags = listOf("MARVEL"),
-    ),
-)
