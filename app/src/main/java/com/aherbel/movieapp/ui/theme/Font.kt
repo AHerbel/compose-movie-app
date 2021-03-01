@@ -1,6 +1,7 @@
 package com.aherbel.movieapp.ui.theme
 
-import androidx.compose.ui.text.font.ResourceFont
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.toFontFamily
 import com.aherbel.movieapp.R
 
-val jokerFont = ResourceFont(resId = R.font.gothic_joker)
+val jokerFont = Font(resId = R.font.gothic_joker).toFontFamily()
