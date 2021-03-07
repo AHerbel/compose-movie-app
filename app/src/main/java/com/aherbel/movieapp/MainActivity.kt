@@ -5,11 +5,9 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.animation.splineBasedDecay
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.horizontalDrag
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -19,11 +17,14 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -40,6 +41,8 @@ import androidx.compose.ui.unit.*
 import com.aherbel.movieapp.model.Movie
 import com.aherbel.movieapp.ui.theme.*
 import dev.chrisbanes.accompanist.coil.CoilImage
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.round
@@ -47,6 +50,7 @@ import kotlin.math.roundToInt
 
 class MainActivity : AppCompatActivity() {
     
+    @ExperimentalMaterialApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -60,6 +64,7 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
+@ExperimentalMaterialApi
 @Preview(
     showSystemUi = true,
     showBackground = true,
@@ -72,6 +77,7 @@ fun DefaultPreview() {
     }
 }
 
+@ExperimentalMaterialApi
 @Composable
 fun Home() {
     val carouselState = rememberCarouselState()
@@ -96,6 +102,16 @@ fun Home() {
         ) {
             TopMenu()
             Spacer(Modifier.height(48.dp))
+    
+            val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
+            val posterSpacingDp = screenWidthDp * .55f
+            val contentPaddingDp = screenWidthDp * 0.25f
+    
+            Carousel(movies, posterSpacingDp, contentPaddingDp, carouselState) { movie ->
+                MoviePoster(movie)
+            }
+            Spacer(Modifier.height(24.dp))
+            
             Text(
                 text = selectedItem.name,
                 color = Color.White,
@@ -131,19 +147,11 @@ fun Home() {
             Spacer(Modifier.height(24.dp))
             BuyTicketButton()
             Spacer(Modifier.height(24.dp))
-            
-            val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
-            val posterSpacingDp = screenWidthDp * .55f
-            val contentPaddingDp = screenWidthDp * 0.25f
-            
-            Carousel(movies, posterSpacingDp, contentPaddingDp, carouselState) { movie ->
-                MoviePoster(movie)
-            }
-            Spacer(Modifier.height(24.dp))
         }
     }
 }
 
+@ExperimentalMaterialApi
 @Composable
 fun <T> Carousel(
     items: List<T>,
@@ -155,29 +163,21 @@ fun <T> Carousel(
     
     state.update(items.size, itemSpacing)
     val itemSpacingPx = state.itemSpacingPx
-    val animatedOffset = state.animatedOffset
-    val decay = state.decay
+    val offsetX = state.offsetX
     
     val density = LocalDensity.current
     val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
     val screenWidthPx = with(density) { screenWidthDp.toPx() }
-    
-    var dragDelta by remember { mutableStateOf(0f) }
-    
-    LaunchedEffect(dragDelta) { animatedOffset.snapTo(dragDelta) }
     
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 48.dp)
             .padding(horizontal = contentPadding)
-            .draggable(
-                state = rememberDraggableState {
-                    dragDelta = state.calculateTarget(it)
-                },
-                orientation = Orientation.Horizontal,
-                //onDrag = { state.onDrag(it) },
-                onDragStopped = { animatedOffset.animateDecay(it, decay) },
+            .snapToCenter(
+                offsetX = state.offsetX,
+                adjustTarget = { state.adjustTarget(it) },
+                getCenter = { state.getItemCenterByTarget(it) }
             )
     ) {
         items.forEachIndexed { index, item ->
@@ -185,9 +185,9 @@ fun <T> Carousel(
             Column(
                 Modifier
                     .offset(
-                        getX = { center + animatedOffset.value },
+                        getX = { center + offsetX.value },
                         getY = {
-                            val distFromCenter = abs(animatedOffset.value + center) / screenWidthPx
+                            val distFromCenter = abs(offsetX.value + center) / screenWidthPx
                             lerp(0f, 250f, distFromCenter)
                         }
                     )
@@ -300,7 +300,6 @@ fun TopMenu() {
             roundedCornerShape
         )
         Icon(
-            //painter = painterResource(id = R.drawable.ic_menu),
             imageVector = ImageVector.vectorResource(R.drawable.ic_menu),
             contentDescription = null,
             tint = Color.White,
@@ -312,10 +311,9 @@ fun TopMenu() {
         
         Spacer(Modifier.width(8.dp))
         
-        var searchText by rememberSaveable(TextFieldValue(), stateSaver = TextFieldValue.Saver, init = { mutableStateOf(TextFieldValue()) })
-        /*savedInstanceState(saver = TextFieldValue.Saver) {
-            TextFieldValue()
-        }*/
+        var searchText by rememberSaveable(TextFieldValue(),
+                                           stateSaver = TextFieldValue.Saver,
+                                           init = { mutableStateOf(TextFieldValue()) })
         SearchLayout(value = searchText, onValueChange = { searchText = it })
     }
 }
@@ -360,12 +358,7 @@ fun SearchLayout(
             modifier = Modifier.weight(1f),
             colors = TextFieldDefaults.textFieldColors(
                 backgroundColor = Color.Transparent,
-                //activeColor = Color.Transparent,
-                //inactiveColor = Color.Transparent,
             ),
-            //backgroundColor = Color.Transparent,
-            //activeColor = Color.Transparent,
-            //inactiveColor = Color.Transparent,
             placeholder = {
                 Text(
                     text = searchProductsText,
@@ -388,25 +381,19 @@ fun SearchLayout(
 @Composable
 fun rememberCarouselState(): CarouselState {
     val density = LocalDensity.current
-    //val clock = AmbientAnimationClock.current.asDisposableClock()
-    val animatedOffset = remember { Animatable(0f) }
-                         //animatedFloat(0f)
+    val offsetX = remember { Animatable(0f) }
     return remember(density) {
         CarouselState(
             density,
-            animatedOffset
+            offsetX
         )
     }
 }
 
-class CarouselState(
+class CarouselState constructor(
     private val density: Density,
-    internal val animatedOffset: Animatable<Float, AnimationVector1D>,
-    //internal val animatedOffset: AnimatedFloat,
+    internal val offsetX: Animatable<Float, AnimationVector1D>,
 ) {
-    
-    internal val decay = splineBasedDecay<Float>(density)
-    //private val flingConfig = FlingConfig(FloatAndroidFlingDecaySpec(density)) { adjustTarget(it) }
     
     private var itemCount: Int = 0
     internal var itemSpacingPx: Float = 0f
@@ -414,53 +401,60 @@ class CarouselState(
     private val upperBound: Float = 0f
     private val lowerBound: Float get() = -1 * (itemCount - 1) * itemSpacingPx
     
-    val selectedIndex: Int get() = offsetToIndex(animatedOffset.value, itemSpacingPx)
+    val selectedIndex: Int get() = offsetToIndex(offsetX.value, itemSpacingPx)
     
-    internal fun calculateTarget(delta: Float): Float {
-        var target = animatedOffset.value + delta
-        when {
+    fun adjustTarget(target: Float): Float {
+        return when {
             target > upperBound -> {
-                target = upperBound
+                upperBound
             }
             target < lowerBound -> {
-                target = lowerBound
+                lowerBound
             }
+            else -> target
         }
-        return target
     }
     
-    /*internal fun onDrag(delta: Float) {
-        var target = animatedOffset.value + delta
-        when {
-            target > upperBound -> {
-                target = upperBound
-            }
-            target < lowerBound -> {
-                target = lowerBound
-            }
-        }
-        
-        animatedOffset.snapTo(target)
-    }*/
-    
-    /*internal fun fling(velocity: Float) {
-        LaunchedEffect(velocity) {
-            animatedOffset.animateDecay(velocity, decay)
-        }
-        //animatedOffset.fling(velocity, flingConfig)
-    }*/
+    internal fun getItemCenterByTarget(target: Float): Float {
+        val adjustedTarget = adjustTarget(target)
+        return (adjustedTarget / itemSpacingPx).roundToInt() * itemSpacingPx
+    }
     
     internal fun update(itemsCount: Int, itemSpacing: Dp) {
         itemCount = itemsCount
         itemSpacingPx = with(density) { itemSpacing.toPx() }
-        animatedOffset.updateBounds(lowerBound, upperBound)
-        //animatedOffset.setBounds(lowerBound, upperBound)
+        offsetX.updateBounds(lowerBound, upperBound)
     }
     
-    /*private fun adjustTarget(target: Float): TargetAnimation {
-        return TargetAnimation((target / itemSpacingPx).roundToInt() * itemSpacingPx)
-    }*/
-    
+}
+
+fun Modifier.snapToCenter(
+    offsetX: Animatable<Float, AnimationVector1D>,
+    adjustTarget: (Float) -> Float,
+    getCenter: (Float) -> Float
+): Modifier = composed {
+    pointerInput(Unit) {
+        coroutineScope {
+            while (true) {
+                val down = awaitPointerEventScope { awaitFirstDown() }
+                awaitPointerEventScope {
+                    horizontalDrag(down.id) { change ->
+                        val adjustedX = adjustTarget(
+                            offsetX.value + change.positionChange().x
+                        )
+                        launch {
+                            offsetX.snapTo(adjustedX)
+                        }
+                    }
+                }
+                
+                val itemCenter = getCenter(offsetX.value)
+                launch {
+                    offsetX.animateTo(itemCenter)
+                }
+            }
+        }
+    }
 }
 
 fun Modifier.offset(
