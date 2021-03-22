@@ -3,4 +3,5 @@
     <string name="search_products">Search products…</string>
     <string name="buy_ticket">Buy ticket</string>
     <string name="menu">Menu</string>
+    <string name="no_movies_available">No movies available</string>
 </resources>

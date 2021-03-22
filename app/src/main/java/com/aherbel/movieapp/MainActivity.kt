@@ -10,8 +10,11 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.horizontalDrag
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -22,21 +25,23 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.*
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.*
-import com.aherbel.movieapp.ui.theme.*
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.aherbel.movieapp.ui.theme.MovieAppTheme
+import com.aherbel.movieapp.ui.theme.jokerFont
+import com.aherbel.movieapp.ui.theme.red
+import com.aherbel.movieapp.ui.theme.roundedCornerShape
 import com.aherbel.movieapp.ui.widgets.*
 import dev.chrisbanes.accompanist.coil.CoilImage
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlin.math.round
 import kotlin.math.roundToInt
 
 class MainActivity : AppCompatActivity() {
@@ -72,11 +77,16 @@ fun DefaultPreview() {
 @Composable
 fun Home() {
     val carouselState = rememberCarouselState()
-    val selectedItem = movies[carouselState.selectedIndex]
+    var filteredMovies by remember { mutableStateOf(movies) }
+    val selectedItem = if (filteredMovies.isEmpty()) {
+        null
+    } else {
+        filteredMovies[carouselState.selectedIndex]
+    }
     
-    Box(Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
         CoilImage(
-            data = selectedItem.imageUrl,
+            data = selectedItem?.imageUrl ?: R.drawable.joker,
             contentDescription = null,
             modifier = Modifier.matchParentSize(),
             contentScale = ContentScale.Crop
@@ -91,59 +101,79 @@ fun Home() {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.verticalScroll(rememberScrollState())
         ) {
-            TopMenu()
+            val searchState = rememberSearchState { searchText ->
+                filteredMovies = if (searchText.isNotEmpty()) {
+                    movies.filter { it.name.contains(searchText, true) }
+                } else {
+                    movies
+                }
+            }
+            TopMenu(searchState)
             Spacer(Modifier.height(48.dp))
             
             val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
             val posterSpacingDp = screenWidthDp * .55f
             val contentPaddingDp = screenWidthDp * 0.25f
             
-            Carousel(movies, posterSpacingDp, contentPaddingDp, carouselState) { movie ->
+            Carousel(filteredMovies, posterSpacingDp, contentPaddingDp, carouselState) { movie ->
                 MoviePoster(movie)
             }
             Spacer(Modifier.height(24.dp))
             
-            Text(
-                text = selectedItem.name,
-                color = Color.White,
-                fontSize = 62.sp,
-                fontFamily = jokerFont,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
-            Row {
-                if (selectedItem.category.isNotEmpty()) {
-                    Category(selectedItem.category)
+            if (selectedItem != null) {
+                Text(
+                    text = selectedItem.name,
+                    color = Color.White,
+                    fontSize = 62.sp,
+                    fontFamily = jokerFont,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+                Row {
+                    if (selectedItem.category.isNotEmpty()) {
+                        Category(selectedItem.category)
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    AgeClasification(selectedItem.ageClasification)
+                    Spacer(Modifier.width(8.dp))
+                    Score(selectedItem.score)
                 }
-                Spacer(Modifier.width(8.dp))
-                AgeClasification(selectedItem.ageClasification)
-                Spacer(Modifier.width(8.dp))
-                Score(selectedItem.score)
+                Spacer(Modifier.height(24.dp))
+    
+                val year = selectedItem.year.toString()
+                val genres = selectedItem.genres.joinToString()
+                val soundsMix = selectedItem.soundsMix.joinToString()
+                Descriptors(
+                    descriptors = listOf(year, genres, soundsMix),
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+                Spacer(Modifier.height(24.dp))
+                Descriptors(descriptors = selectedItem.tags)
+                Spacer(Modifier.height(24.dp))
+                Line(color = red)
+                Spacer(Modifier.height(24.dp))
+                BuyTicketButton()
+                Spacer(Modifier.height(24.dp))
+            } else {
+                Text(
+                    text = stringResource(R.string.no_movies_available),
+                    color = Color.White,
+                    fontSize = 50.sp,
+                    fontFamily = jokerFont,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
             }
-            Spacer(Modifier.height(24.dp))
-            
-            val year = selectedItem.year.toString()
-            val genres = selectedItem.genres.joinToString()
-            val soundsMix = selectedItem.soundsMix.joinToString()
-            Descriptors(
-                descriptors = listOf(year, genres, soundsMix),
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
-            Spacer(Modifier.height(24.dp))
-            Descriptors(descriptors = selectedItem.tags)
-            Spacer(Modifier.height(24.dp))
-            Line(color = red)
-            Spacer(Modifier.height(24.dp))
-            BuyTicketButton()
-            Spacer(Modifier.height(24.dp))
         }
     }
 }
 
 @Composable
-fun TopMenu() {
+fun TopMenu(searchState: SearchState) {
     Row(Modifier.padding(24.dp)) {
         val border = Modifier.border(
             BorderStroke(1.dp, Color.White.copy(alpha = 0.5f)),
@@ -161,10 +191,7 @@ fun TopMenu() {
         
         Spacer(Modifier.width(8.dp))
         
-        var searchText by rememberSaveable(TextFieldValue(),
-                                           stateSaver = TextFieldValue.Saver,
-                                           init = { mutableStateOf(TextFieldValue()) })
-        SearchLayout(value = searchText, onValueChange = { searchText = it })
+        SearchLayout(searchState)
     }
 }
 

@@ -89,7 +89,11 @@ class CarouselState constructor(
     internal var itemSpacingPx: Float = 0f
     
     private val upperBound: Float = 0f
-    private val lowerBound: Float get() = -1 * (itemCount - 1) * itemSpacingPx
+    private val lowerBound: Float get() = if(itemCount > 0) {
+        -1 * (itemCount - 1) * itemSpacingPx
+    } else {
+        0f
+    }
     
     val selectedIndex: Int get() = offsetToIndex(offsetX.value, itemSpacingPx)
     
