@@ -26,7 +26,10 @@ import com.aherbel.movieapp.ui.theme.MovieAppTheme
 import com.aherbel.movieapp.ui.theme.roundedCornerShape
 
 @Composable
-fun SearchLayout(state: SearchState) {
+fun SearchLayout(
+    text: String,
+    onTextChange: (String) -> Unit
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -36,13 +39,9 @@ fun SearchLayout(state: SearchState) {
                 roundedCornerShape
             )
     ) {
-        var text by remember { mutableStateOf(state.text) }
         TextField(
             value = text,
-            onValueChange = {
-                state.onValueChangeInternal(it)
-                text = it
-            },
+            onValueChange = onTextChange,
             modifier = Modifier.weight(1f),
             colors = TextFieldDefaults.textFieldColors(
                 cursorColor = Color.White,
@@ -73,25 +72,6 @@ fun SearchLayout(state: SearchState) {
     }
 }
 
-@Composable
-fun rememberSearchState(initialValue: String = "", onValueChange: (String) -> Unit): SearchState {
-    return remember { SearchState(initialValue, onValueChange) }
-}
-
-class SearchState constructor(
-    initialValue: String,
-    val onValueChange: (String) -> Unit
-) {
-    
-    var text: String = initialValue
-    
-    internal fun onValueChangeInternal(newText: String) {
-        text = newText
-        this.onValueChange(newText)
-    }
-    
-}
-
 @Preview(
     showSystemUi = true,
     showBackground = true,
@@ -101,9 +81,7 @@ class SearchState constructor(
 @Composable
 fun SearchLayoutPreview() {
     MovieAppTheme {
-        val state = rememberSearchState(initialValue = "") {
-        
-        }
-        SearchLayout(state)
+        val (text, setText) = remember { mutableStateOf("") }
+        SearchLayout(text, setText)
     }
 }

@@ -2,28 +2,18 @@ package com.aherbel.movieapp
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.horizontalDrag
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
-import androidx.compose.ui.layout.*
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -31,20 +21,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aherbel.movieapp.ui.theme.MovieAppTheme
 import com.aherbel.movieapp.ui.theme.jokerFont
 import com.aherbel.movieapp.ui.theme.red
 import com.aherbel.movieapp.ui.theme.roundedCornerShape
+import com.aherbel.movieapp.ui.viewmodels.MoviesViewModel
 import com.aherbel.movieapp.ui.widgets.*
 import dev.chrisbanes.accompanist.coil.CoilImage
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 
 class MainActivity : AppCompatActivity() {
+    
+    private val moviesViewModel: MoviesViewModel by viewModels()
     
     @ExperimentalMaterialApi
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,7 +42,7 @@ class MainActivity : AppCompatActivity() {
             MovieAppTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    Home()
+                    Home(moviesViewModel)
                 }
             }
         }
@@ -61,28 +50,13 @@ class MainActivity : AppCompatActivity() {
 }
 
 @ExperimentalMaterialApi
-@Preview(
-    showSystemUi = true,
-    showBackground = true,
-    device = Devices.PIXEL_3A
-)
 @Composable
-fun DefaultPreview() {
-    MovieAppTheme {
-        Home()
+fun Home(moviesViewModel: MoviesViewModel) {
+    val carouselState = rememberCarouselState { selectedIndex ->
+        moviesViewModel.onSelectedMovieChanged(selectedIndex)
     }
-}
-
-@ExperimentalMaterialApi
-@Composable
-fun Home() {
-    val carouselState = rememberCarouselState()
-    var filteredMovies by remember { mutableStateOf(movies) }
-    val selectedItem = if (filteredMovies.isEmpty()) {
-        null
-    } else {
-        filteredMovies[carouselState.selectedIndex]
-    }
+    
+    val selectedItem = moviesViewModel.selectedMovie
     
     Box(modifier = Modifier.fillMaxSize()) {
         CoilImage(
@@ -101,21 +75,14 @@ fun Home() {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.verticalScroll(rememberScrollState())
         ) {
-            val searchState = rememberSearchState { searchText ->
-                filteredMovies = if (searchText.isNotEmpty()) {
-                    movies.filter { it.name.contains(searchText, true) }
-                } else {
-                    movies
-                }
-            }
-            TopMenu(searchState)
+            TopMenu(moviesViewModel.searchQuery, moviesViewModel::onSearchQueryChanged)
             Spacer(Modifier.height(48.dp))
             
             val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
             val posterSpacingDp = screenWidthDp * .55f
             val contentPaddingDp = screenWidthDp * 0.25f
             
-            Carousel(filteredMovies, posterSpacingDp, contentPaddingDp, carouselState) { movie ->
+            Carousel(moviesViewModel.movies, posterSpacingDp, contentPaddingDp, carouselState) { movie ->
                 MoviePoster(movie)
             }
             Spacer(Modifier.height(24.dp))
@@ -141,7 +108,7 @@ fun Home() {
                     Score(selectedItem.score)
                 }
                 Spacer(Modifier.height(24.dp))
-    
+                
                 val year = selectedItem.year.toString()
                 val genres = selectedItem.genres.joinToString()
                 val soundsMix = selectedItem.soundsMix.joinToString()
@@ -173,7 +140,10 @@ fun Home() {
 }
 
 @Composable
-fun TopMenu(searchState: SearchState) {
+fun TopMenu(
+    text: String,
+    onTextChange: (String) -> Unit,
+) {
     Row(Modifier.padding(24.dp)) {
         val border = Modifier.border(
             BorderStroke(1.dp, Color.White.copy(alpha = 0.5f)),
@@ -191,59 +161,20 @@ fun TopMenu(searchState: SearchState) {
         
         Spacer(Modifier.width(8.dp))
         
-        SearchLayout(searchState)
+        SearchLayout(text, onTextChange)
     }
 }
 
-fun Modifier.snapToCenter(
-    offsetX: Animatable<Float, AnimationVector1D>,
-    adjustTarget: (Float) -> Float,
-    getCenter: (Float) -> Float,
-): Modifier = composed {
-    pointerInput(Unit) {
-        coroutineScope {
-            while (true) {
-                val down = awaitPointerEventScope { awaitFirstDown() }
-                awaitPointerEventScope {
-                    horizontalDrag(down.id) { change ->
-                        val adjustedX = adjustTarget(
-                            offsetX.value + change.positionChange().x
-                        )
-                        launch {
-                            offsetX.snapTo(adjustedX)
-                        }
-                    }
-                }
-                
-                val itemCenter = getCenter(offsetX.value)
-                launch {
-                    offsetX.animateTo(itemCenter)
-                }
-            }
-        }
+@ExperimentalMaterialApi
+@Preview(
+    showSystemUi = true,
+    showBackground = true,
+    device = Devices.PIXEL_3A
+)
+@Composable
+fun DefaultPreview() {
+    MovieAppTheme {
+        val moviesViewModel = MoviesViewModel()
+        Home(moviesViewModel)
     }
-}
-
-fun Modifier.offset(
-    getX: () -> Float,
-    getY: () -> Float,
-    rtlAware: Boolean = true,
-) = this then object : LayoutModifier {
-    override fun MeasureScope.measure(
-        measurable: Measurable,
-        constraints: Constraints,
-    ): MeasureResult {
-        val placeable = measurable.measure(constraints)
-        return layout(placeable.width, placeable.height) {
-            if (rtlAware) {
-                placeable.placeRelative(getX().roundToInt(), getY().roundToInt())
-            } else {
-                placeable.place(getX().roundToInt(), getY().roundToInt())
-            }
-        }
-    }
-}
-
-fun lerp(start: Float, stop: Float, fraction: Float): Float {
-    return (1 - fraction) * start + fraction * stop
 }

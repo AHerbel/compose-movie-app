@@ -13,8 +13,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.aherbel.movieapp.*
 import com.aherbel.movieapp.ui.theme.roundedCornerShape
+import com.aherbel.movieapp.ui.utils.offset
+import com.aherbel.movieapp.ui.utils.snapToCenter
+import com.google.android.material.math.MathUtils.lerp
 import kotlin.math.abs
 import kotlin.math.round
 import kotlin.math.roundToInt
@@ -69,11 +71,12 @@ fun <T> Carousel(
 }
 
 @Composable
-fun rememberCarouselState(): CarouselState {
+fun rememberCarouselState(onSelectedIndexChange: (Int) -> Unit = {}): CarouselState {
     val density = LocalDensity.current
     val offsetX = remember { Animatable(0f) }
     return remember(density) {
         CarouselState(
+            onSelectedIndexChange,
             density,
             offsetX
         )
@@ -81,6 +84,7 @@ fun rememberCarouselState(): CarouselState {
 }
 
 class CarouselState constructor(
+    private val onSelectedIndexChange: (Int) -> Unit,
     private val density: Density,
     internal val offsetX: Animatable<Float, AnimationVector1D>,
 ) {
@@ -89,13 +93,15 @@ class CarouselState constructor(
     internal var itemSpacingPx: Float = 0f
     
     private val upperBound: Float = 0f
-    private val lowerBound: Float get() = if(itemCount > 0) {
-        -1 * (itemCount - 1) * itemSpacingPx
-    } else {
-        0f
-    }
+    private val lowerBound: Float
+        get() = if (itemCount > 0) {
+            -1 * (itemCount - 1) * itemSpacingPx
+        } else {
+            0f
+        }
     
-    val selectedIndex: Int get() = offsetToIndex(offsetX.value, itemSpacingPx)
+    var selectedIndex: Int = 0
+        private set
     
     fun adjustTarget(target: Float): Float {
         return when {
@@ -118,8 +124,9 @@ class CarouselState constructor(
         itemCount = itemsCount
         itemSpacingPx = with(density) { itemSpacing.toPx() }
         offsetX.updateBounds(lowerBound, upperBound)
+        selectedIndex = offsetToIndex(offsetX.value, itemSpacingPx)
+        onSelectedIndexChange(selectedIndex)
     }
-    
 }
 
 private fun offsetToIndex(offset: Float, spacingPx: Float): Int =
