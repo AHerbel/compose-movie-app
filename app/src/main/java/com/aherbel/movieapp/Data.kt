@@ -1,6 +1,6 @@
 package com.aherbel.movieapp
 
-import com.aherbel.movieapp.model.Movie
+import com.aherbel.movieapp.domain.model.Movie
 
 val movies = listOf(
     Movie(
@@ -30,7 +30,7 @@ val movies = listOf(
         year = 2011,
         genres = listOf("Adventure", "Drama", "Fantasy", "Mystery"),
         soundsMix = listOf("Dolby Digital", "Datastat", "Dolby Surround 7.1", "SDDS", "Sonics-DDP", "DTS"),
-        imageUrl = "https://cdn.shopify.com/s/files/1/2372/3627/products/HarryPotter_theDeathlyHallowsPt2_1024x.jpg?v=1586793835",
+        imageUrl = "https://resizing.flixster.com/wmlhe2fviIYyNKkIdSXXxlCaeaE=/800x1132/v1.bTsxMTMwNDIyNjtqOzE3MDA2OzIwNDg7MTUyMDsyMTUx",
         score = 8.1f,
         ageClasification = 7,
         category = "MOST VIEWED",

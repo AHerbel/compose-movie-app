@@ -1,4 +1,4 @@
-package com.aherbel.movieapp.ui.widgets
+package com.aherbel.movieapp.presentation.widgets
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable

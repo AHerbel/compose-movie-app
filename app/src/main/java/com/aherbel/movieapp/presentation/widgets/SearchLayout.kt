@@ -1,4 +1,4 @@
-package com.aherbel.movieapp.ui.widgets
+package com.aherbel.movieapp.presentation.widgets
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -22,8 +22,8 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aherbel.movieapp.R
-import com.aherbel.movieapp.ui.theme.MovieAppTheme
-import com.aherbel.movieapp.ui.theme.roundedCornerShape
+import com.aherbel.movieapp.presentation.theme.MovieAppTheme
+import com.aherbel.movieapp.presentation.theme.roundedCornerShape
 
 @Composable
 fun SearchLayout(

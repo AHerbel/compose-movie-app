@@ -1,24 +1,39 @@
-package com.aherbel.movieapp.ui.viewmodels
+package com.aherbel.movieapp.presentation.viewmodels
 
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.aherbel.movieapp.model.Movie
+import androidx.lifecycle.viewModelScope
+import com.aherbel.movieapp.domain.model.Movie
+import com.aherbel.movieapp.domain.repositories.MoviesRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MoviesViewModel : ViewModel() {
+@HiltViewModel
+class MoviesViewModel @Inject constructor(
+    private val moviesRepository: MoviesRepository,
+) : ViewModel() {
     
-    private val originalMovies: List<Movie> by derivedStateOf { com.aherbel.movieapp.movies }
+    private var originalMovies: MutableList<Movie> by mutableStateOf(mutableListOf())
     
     var searchQuery: String by mutableStateOf("")
         private set
     
-    var selectedMovie: Movie? by mutableStateOf(originalMovies.first())
+    var selectedMovie: Movie? by mutableStateOf(originalMovies.firstOrNull())
         private set
     
     var movies: List<Movie> by mutableStateOf(originalMovies)
         private set
+    
+    init {
+        viewModelScope.launch {
+            originalMovies = moviesRepository.getMovies().toMutableList().also {
+                movies = it
+            }
+        }
+    }
     
     fun onSearchQueryChanged(searchQuery: String) {
         this.searchQuery = searchQuery

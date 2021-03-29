@@ -1,4 +1,4 @@
-package com.aherbel.movieapp.model
+package com.aherbel.movieapp.domain.model
 
 data class Movie(
     val name: String,

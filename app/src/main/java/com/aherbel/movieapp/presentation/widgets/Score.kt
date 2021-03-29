@@ -1,4 +1,4 @@
-package com.aherbel.movieapp.ui.widgets
+package com.aherbel.movieapp.presentation.widgets
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.SpanStyle
@@ -6,8 +6,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
-import com.aherbel.movieapp.ui.theme.black
-import com.aherbel.movieapp.ui.theme.yellow
+import com.aherbel.movieapp.presentation.theme.black
+import com.aherbel.movieapp.presentation.theme.yellow
 
 @Composable
 fun Score(score: Float) {

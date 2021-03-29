@@ -1,4 +1,4 @@
-package com.aherbel.movieapp.ui.theme
+package com.aherbel.movieapp.presentation.theme
 
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.toFontFamily

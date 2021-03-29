@@ -1,4 +1,4 @@
-package com.aherbel.movieapp.ui.theme
+package com.aherbel.movieapp.presentation.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Shapes

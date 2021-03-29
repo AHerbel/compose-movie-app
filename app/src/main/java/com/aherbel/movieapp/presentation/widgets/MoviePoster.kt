@@ -1,8 +1,8 @@
-package com.aherbel.movieapp.ui.widgets
+package com.aherbel.movieapp.presentation.widgets
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.aherbel.movieapp.model.Movie
+import com.aherbel.movieapp.domain.model.Movie
 import dev.chrisbanes.accompanist.coil.CoilImage
 
 @Composable

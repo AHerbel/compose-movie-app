@@ -1,4 +1,4 @@
-package com.aherbel.movieapp.ui.utils
+package com.aherbel.movieapp.presentation.utils
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
@@ -22,7 +22,7 @@ fun Modifier.snapToCenter(
     adjustTarget: (Float) -> Float,
     getCenter: (Float) -> Float,
 ): Modifier = composed {
-    pointerInput(Unit) {
+    pointerInput(Unit.INSTANCE) {
         coroutineScope {
             while (true) {
                 val down = awaitPointerEventScope { awaitFirstDown() }

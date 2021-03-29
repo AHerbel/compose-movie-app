@@ -23,14 +23,17 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.aherbel.movieapp.ui.theme.MovieAppTheme
-import com.aherbel.movieapp.ui.theme.jokerFont
-import com.aherbel.movieapp.ui.theme.red
-import com.aherbel.movieapp.ui.theme.roundedCornerShape
-import com.aherbel.movieapp.ui.viewmodels.MoviesViewModel
-import com.aherbel.movieapp.ui.widgets.*
+import com.aherbel.infrastructure.repositories.LocalMoviesRepository
+import com.aherbel.movieapp.presentation.theme.MovieAppTheme
+import com.aherbel.movieapp.presentation.theme.jokerFont
+import com.aherbel.movieapp.presentation.theme.red
+import com.aherbel.movieapp.presentation.theme.roundedCornerShape
+import com.aherbel.movieapp.presentation.viewmodels.MoviesViewModel
+import com.aherbel.movieapp.presentation.widgets.*
+import dagger.hilt.android.AndroidEntryPoint
 import dev.chrisbanes.accompanist.coil.CoilImage
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     
     private val moviesViewModel: MoviesViewModel by viewModels()
@@ -94,9 +97,11 @@ fun Home(moviesViewModel: MoviesViewModel) {
                     fontSize = 62.sp,
                     fontFamily = jokerFont,
                     textAlign = TextAlign.Center,
-                    maxLines = 2,
+                    maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(8.dp)
                 )
                 Row {
                     if (selectedItem.category.isNotEmpty()) {
@@ -174,7 +179,7 @@ fun TopMenu(
 @Composable
 fun DefaultPreview() {
     MovieAppTheme {
-        val moviesViewModel = MoviesViewModel()
+        val moviesViewModel = MoviesViewModel(LocalMoviesRepository())
         Home(moviesViewModel)
     }
 }

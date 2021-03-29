@@ -1,4 +1,4 @@
-package com.aherbel.movieapp.ui.widgets
+package com.aherbel.movieapp.presentation.widgets
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
@@ -13,9 +13,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.aherbel.movieapp.ui.theme.roundedCornerShape
-import com.aherbel.movieapp.ui.utils.offset
-import com.aherbel.movieapp.ui.utils.snapToCenter
+import com.aherbel.movieapp.presentation.theme.roundedCornerShape
+import com.aherbel.movieapp.presentation.utils.offset
+import com.aherbel.movieapp.presentation.utils.snapToCenter
 import com.google.android.material.math.MathUtils.lerp
 import kotlin.math.abs
 import kotlin.math.round
