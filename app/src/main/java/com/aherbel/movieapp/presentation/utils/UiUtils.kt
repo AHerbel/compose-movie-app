@@ -22,7 +22,7 @@ fun Modifier.snapToCenter(
     adjustTarget: (Float) -> Float,
     getCenter: (Float) -> Float,
 ): Modifier = composed {
-    pointerInput(Unit.INSTANCE) {
+    pointerInput(Unit) {
         coroutineScope {
             while (true) {
                 val down = awaitPointerEventScope { awaitFirstDown() }

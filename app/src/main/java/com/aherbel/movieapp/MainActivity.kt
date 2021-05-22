@@ -30,8 +30,8 @@ import com.aherbel.movieapp.presentation.theme.red
 import com.aherbel.movieapp.presentation.theme.roundedCornerShape
 import com.aherbel.movieapp.presentation.viewmodels.MoviesViewModel
 import com.aherbel.movieapp.presentation.widgets.*
+import com.google.accompanist.coil.rememberCoilPainter
 import dagger.hilt.android.AndroidEntryPoint
-import dev.chrisbanes.accompanist.coil.CoilImage
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -62,8 +62,8 @@ fun Home(moviesViewModel: MoviesViewModel) {
     val selectedItem = moviesViewModel.selectedMovie
     
     Box(modifier = Modifier.fillMaxSize()) {
-        CoilImage(
-            data = selectedItem?.imageUrl ?: R.drawable.joker,
+        Image(
+            painter = rememberCoilPainter(request = selectedItem?.imageUrl ?: R.drawable.joker),
             contentDescription = null,
             modifier = Modifier.matchParentSize(),
             contentScale = ContentScale.Crop
