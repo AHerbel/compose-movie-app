@@ -21,7 +21,6 @@ import kotlin.math.abs
 import kotlin.math.round
 import kotlin.math.roundToInt
 
-@ExperimentalMaterialApi
 @Composable
 fun <T> Carousel(
     items: List<T>,

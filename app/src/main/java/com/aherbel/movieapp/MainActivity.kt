@@ -38,7 +38,6 @@ class MainActivity : AppCompatActivity() {
     
     private val moviesViewModel: MoviesViewModel by viewModels()
     
-    @ExperimentalMaterialApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -52,7 +51,6 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-@ExperimentalMaterialApi
 @Composable
 fun Home(moviesViewModel: MoviesViewModel) {
     val carouselState = rememberCarouselState { selectedIndex ->
@@ -170,7 +168,6 @@ fun TopMenu(
     }
 }
 
-@ExperimentalMaterialApi
 @Preview(
     showSystemUi = true,
     showBackground = true,
