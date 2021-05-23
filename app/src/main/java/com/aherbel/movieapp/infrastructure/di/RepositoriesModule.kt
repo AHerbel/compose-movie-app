@@ -1,7 +1,6 @@
-package com.aherbel.infrastructure.di
+package com.aherbel.movieapp.infrastructure.di
 
-import com.aherbel.infrastructure.repositories.DefaultMoviesRepository
-import com.aherbel.infrastructure.repositories.LocalMoviesRepository
+import com.aherbel.movieapp.infrastructure.repositories.DefaultMoviesRepository
 import com.aherbel.movieapp.domain.repositories.MoviesRepository
 import dagger.Binds
 import dagger.Module

@@ -1,6 +1,6 @@
-package com.aherbel.infrastructure.mappers
+package com.aherbel.movieapp.infrastructure.mappers
 
-import com.aherbel.infrastructure.remote.responses.NetworkMovie
+import com.aherbel.movieapp.infrastructure.remote.responses.NetworkMovie
 import com.aherbel.movieapp.domain.model.Movie
 import java.time.LocalDate
 

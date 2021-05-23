@@ -1,4 +1,4 @@
-package com.aherbel.movieapp
+package com.aherbel.movieapp.presentation
 
 import android.os.Bundle
 import androidx.activity.compose.setContent

@@ -1,7 +1,7 @@
-package com.aherbel.infrastructure.remote
+package com.aherbel.movieapp.infrastructure.remote
 
-import com.aherbel.infrastructure.remote.responses.MoviesResponse
-import com.aherbel.infrastructure.remote.responses.NetworkMovie
+import com.aherbel.movieapp.infrastructure.remote.responses.MoviesResponse
+import com.aherbel.movieapp.infrastructure.remote.responses.NetworkMovie
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query

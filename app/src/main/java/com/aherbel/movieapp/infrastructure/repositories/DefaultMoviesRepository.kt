@@ -1,4 +1,4 @@
-package com.aherbel.infrastructure.repositories
+package com.aherbel.movieapp.infrastructure.repositories
 
 import com.aherbel.movieapp.domain.datasources.MoviesDataSource
 import com.aherbel.movieapp.domain.model.Movie

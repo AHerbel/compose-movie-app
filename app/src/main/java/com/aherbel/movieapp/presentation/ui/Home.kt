@@ -15,7 +15,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.aherbel.infrastructure.repositories.LocalMoviesRepository
+import com.aherbel.movieapp.infrastructure.repositories.LocalMoviesRepository
 import com.aherbel.movieapp.R
 import com.aherbel.movieapp.presentation.theme.MovieAppTheme
 import com.aherbel.movieapp.presentation.viewmodels.MoviesViewModel

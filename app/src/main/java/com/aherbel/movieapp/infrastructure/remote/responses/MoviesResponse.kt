@@ -1,4 +1,4 @@
-package com.aherbel.infrastructure.remote.responses
+package com.aherbel.movieapp.infrastructure.remote.responses
 
 import com.squareup.moshi.Json
 

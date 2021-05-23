@@ -1,4 +1,4 @@
-package com.aherbel.infrastructure
+package com.aherbel.movieapp.infrastructure
 
 import androidx.multidex.MultiDexApplication
 import dagger.hilt.android.HiltAndroidApp

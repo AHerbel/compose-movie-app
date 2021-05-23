@@ -1,4 +1,4 @@
-package com.aherbel.infrastructure.repositories
+package com.aherbel.movieapp.infrastructure.repositories
 
 import com.aherbel.movieapp.domain.model.Movie
 import com.aherbel.movieapp.domain.repositories.MoviesRepository

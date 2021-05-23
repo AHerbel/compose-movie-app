@@ -1,4 +1,4 @@
-package com.aherbel.infrastructure.remote
+package com.aherbel.movieapp.infrastructure.remote
 
 import com.squareup.moshi.Moshi
 import okhttp3.OkHttpClient

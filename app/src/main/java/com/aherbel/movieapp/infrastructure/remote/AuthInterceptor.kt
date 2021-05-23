@@ -1,4 +1,4 @@
-package com.aherbel.infrastructure.remote
+package com.aherbel.movieapp.infrastructure.remote
 
 import okhttp3.Interceptor
 import okhttp3.Response
