@@ -1,4 +1,4 @@
-package com.aherbel.movieapp.presentation.widgets
+package com.aherbel.movieapp.presentation.ui
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -15,9 +15,8 @@ fun Descriptors(
     modifier: Modifier = Modifier,
     fontSize: TextUnit = 10.sp,
 ) {
-    val text = descriptors.joinToString(separator = " \u00b7 ")
     Text(
-        text = text,
+        text = descriptors.joinToString(separator = " \u00b7 "),
         color = Color.White,
         fontSize = fontSize,
         fontWeight = FontWeight.Bold,

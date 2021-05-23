@@ -13,6 +13,9 @@ val movies = listOf(
         ageClasification = 18,
         category = "POPULAR WITH FRIENDS",
         tags = listOf("NEW", "MOVIE"),
+        backdropImageUrl = "https://cdn.shopify.com/s/files/1/0969/9128/products/Joker_-_Put_On_A_Happy_Face_-_Joaquin_Phoenix_-_Hollywood_English_Movie_Poster_3_de5e4cfc-cfd4-4732-aad1-271d6bdb1587.jpg?v=1579504979",
+        popularity = 0f,
+        overview = "",
     ),
     Movie(
         name = "The Lord Of The Rings: The Fellowship of the Ring",
@@ -24,6 +27,9 @@ val movies = listOf(
         ageClasification = 12,
         category = "ANTHOLOGY",
         tags = listOf("COLLECTION", "TOLKIEN"),
+        backdropImageUrl = "https://i.pinimg.com/originals/5d/4b/e6/5d4be66e120f0ecfb3b097235fde82fb.jpg",
+        popularity = 0f,
+        overview = "",
     ),
     Movie(
         name = "Harry Potter And The Deadly Hallows - Part 2",
@@ -35,6 +41,9 @@ val movies = listOf(
         ageClasification = 7,
         category = "MOST VIEWED",
         tags = listOf("MAGIC", "KIDS"),
+        backdropImageUrl = "https://resizing.flixster.com/wmlhe2fviIYyNKkIdSXXxlCaeaE=/800x1132/v1.bTsxMTMwNDIyNjtqOzE3MDA2OzIwNDg7MTUyMDsyMTUx",
+        popularity = 0f,
+        overview = "",
     ),
     Movie(
         name = "Iron Man 3",
@@ -46,6 +55,9 @@ val movies = listOf(
         ageClasification = 12,
         category = "SUPERHEROES",
         tags = listOf("MARVEL"),
+        backdropImageUrl = "https://i.pinimg.com/originals/a0/76/df/a076df1ab6dcd44ac9b5be4d34731d17.jpg",
+        popularity = 0f,
+        overview = "",
     ),
     Movie(
         name = "Avengers: End Game",
@@ -66,5 +78,8 @@ val movies = listOf(
         ageClasification = 7,
         category = "SUPERHEROES",
         tags = listOf("MARVEL"),
+        backdropImageUrl = "https://i.pinimg.com/originals/92/c8/e0/92c8e00b34fcfdeaf605a0647c21adb3.jpg",
+        popularity = 0f,
+        overview = "",
     ),
 )

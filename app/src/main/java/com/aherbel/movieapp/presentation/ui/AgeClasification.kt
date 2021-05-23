@@ -1,4 +1,4 @@
-package com.aherbel.movieapp.presentation.widgets
+package com.aherbel.movieapp.presentation.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.AnnotatedString

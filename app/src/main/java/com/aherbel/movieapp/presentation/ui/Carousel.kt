@@ -1,9 +1,8 @@
-package com.aherbel.movieapp.presentation.widgets
+package com.aherbel.movieapp.presentation.ui
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -24,25 +23,23 @@ import kotlin.math.roundToInt
 @Composable
 fun <T> Carousel(
     items: List<T>,
-    itemSpacing: Dp,
-    contentPadding: Dp,
     state: CarouselState,
+    config: CarouselConfig,
     foregroundContent: @Composable (item: T) -> Unit,
 ) {
     
-    state.update(items.size, itemSpacing)
+    state.update(items.size, config.itemSpacing)
     val itemSpacingPx = state.itemSpacingPx
     val offsetX = state.offsetX
     
-    val density = LocalDensity.current
     val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
-    val screenWidthPx = with(density) { screenWidthDp.toPx() }
+    val screenWidthPx = with(LocalDensity.current) { screenWidthDp.toPx() }
     
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 48.dp)
-            .padding(horizontal = contentPadding)
+            .padding(horizontal = config.contentPadding)
             .snapToCenter(
                 offsetX = state.offsetX,
                 adjustTarget = { state.adjustTarget(it) },
@@ -82,6 +79,11 @@ fun rememberCarouselState(onSelectedIndexChange: (Int) -> Unit = {}): CarouselSt
     }
 }
 
+data class CarouselConfig(
+    val itemSpacing: Dp,
+    val contentPadding: Dp,
+)
+
 class CarouselState constructor(
     private val onSelectedIndexChange: (Int) -> Unit,
     private val density: Density,
@@ -104,12 +106,8 @@ class CarouselState constructor(
     
     fun adjustTarget(target: Float): Float {
         return when {
-            target > upperBound -> {
-                upperBound
-            }
-            target < lowerBound -> {
-                lowerBound
-            }
+            target > upperBound -> upperBound
+            target < lowerBound -> lowerBound
             else -> target
         }
     }

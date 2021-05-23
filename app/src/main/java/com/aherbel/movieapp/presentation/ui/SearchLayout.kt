@@ -1,4 +1,4 @@
-package com.aherbel.movieapp.presentation.widgets
+package com.aherbel.movieapp.presentation.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -26,7 +26,7 @@ import com.aherbel.movieapp.presentation.theme.MovieAppTheme
 import com.aherbel.movieapp.presentation.theme.roundedCornerShape
 
 @Composable
-fun SearchLayout(
+fun SearchField(
     text: String,
     onTextChange: (String) -> Unit
 ) {
@@ -82,6 +82,6 @@ fun SearchLayout(
 fun SearchLayoutPreview() {
     MovieAppTheme {
         val (text, setText) = remember { mutableStateOf("") }
-        SearchLayout(text, setText)
+        SearchField(text, setText)
     }
 }

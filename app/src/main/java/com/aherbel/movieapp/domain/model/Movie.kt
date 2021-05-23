@@ -6,8 +6,11 @@ data class Movie(
     val genres: List<String>,
     val soundsMix: List<String>,
     val imageUrl: String,
+    val backdropImageUrl: String,
     val score: Float,
     val ageClasification: Int,
     val category: String,
     val tags: List<String>,
+    val popularity: Float,
+    val overview: String,
 )

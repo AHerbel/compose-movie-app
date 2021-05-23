@@ -1,4 +1,4 @@
-package com.aherbel.movieapp.presentation.widgets
+package com.aherbel.movieapp.presentation.ui
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
