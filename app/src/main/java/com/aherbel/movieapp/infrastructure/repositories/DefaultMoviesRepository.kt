@@ -1,6 +1,6 @@
 package com.aherbel.movieapp.infrastructure.repositories
 
-import com.aherbel.movieapp.domain.mapNullInputList
+import com.aherbel.movieapp.infrastructure.mappers.mapNullInputList
 import com.aherbel.movieapp.domain.model.Movie
 import com.aherbel.movieapp.domain.repositories.MoviesRepository
 import com.aherbel.movieapp.infrastructure.mappers.NetworkMovieMapper

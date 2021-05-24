@@ -1,4 +1,4 @@
-package com.aherbel.movieapp.domain
+package com.aherbel.movieapp.infrastructure.mappers
 
 // Non-nullable to Non-nullable
 inline fun <I, O> mapList(input: List<I>, mapSingle: (I) -> O): List<O> {
