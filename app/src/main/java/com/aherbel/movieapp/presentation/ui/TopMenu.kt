@@ -19,17 +19,18 @@ fun TopMenu(
     onTextChange: (String) -> Unit,
 ) {
     Row(Modifier.padding(24.dp)) {
-        val border = Modifier.border(
-            BorderStroke(1.dp, Color.White.copy(alpha = 0.5f)),
-            roundedCornerShape
-        )
         Icon(
             imageVector = ImageVector.vectorResource(R.drawable.ic_menu),
             contentDescription = null,
             tint = Color.White,
             modifier = Modifier
                 .height(56.dp)
-                .then(border)
+                .then(
+                    Modifier.border(
+                        BorderStroke(1.dp, Color.White.copy(alpha = 0.5f)),
+                        roundedCornerShape
+                    )
+                )
                 .padding(10.dp)
         )
         

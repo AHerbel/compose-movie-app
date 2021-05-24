@@ -1,10 +1,12 @@
 package com.aherbel.movieapp.infrastructure.mappers
 
-import com.aherbel.movieapp.infrastructure.remote.responses.NetworkMovie
 import com.aherbel.movieapp.domain.model.Movie
+import com.aherbel.movieapp.infrastructure.remote.responses.NetworkMovie
 import java.time.LocalDate
 
-fun mapMoviesDto(input: NetworkMovie): Movie {
+typealias NetworkMovieMapper = @JvmSuppressWildcards (networkMovie: NetworkMovie) -> Movie
+
+fun mapNetworkMovie(input: NetworkMovie): Movie {
     return Movie(
         name = input.title.orEmpty(),
         score = input.voteAverage ?: 0f,

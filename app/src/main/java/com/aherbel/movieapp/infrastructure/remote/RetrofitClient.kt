@@ -11,7 +11,7 @@ object RetrofitClient {
     
     private const val BASE_URL = "https://api.themoviedb.org/3/"
     
-    val moviesService: MoviesService
+    val moviesApiService: MoviesApiService
     
     init {
         
@@ -28,8 +28,8 @@ object RetrofitClient {
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .client(okHttpClient)
             .build()
-        
-        moviesService = retrofit.create()
+    
+        moviesApiService = retrofit.create()
         
     }
     
