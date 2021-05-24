@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -13,17 +15,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.aherbel.movieapp.R
+import com.aherbel.movieapp.domain.model.Movie
 import com.aherbel.movieapp.infrastructure.repositories.LocalMoviesRepository
 import com.aherbel.movieapp.presentation.theme.MovieAppTheme
 import com.aherbel.movieapp.presentation.viewmodels.MoviesViewModel
 
 @Composable
-fun Home(moviesViewModel: MoviesViewModel) {
-    val carouselState = rememberCarouselState { selectedIndex ->
-        moviesViewModel.onSelectedMovieChanged(selectedIndex)
-    }
-    
-    val selectedMovie = moviesViewModel.selectedMovie
+fun Home(
+    movies: List<Movie>,
+    selectedMovie: Movie?,
+    searchQuery: String,
+    onSearchChange: (String) -> Unit,
+    onSelectedMovieChange: (Int) -> Unit
+) {
     
     Box(modifier = Modifier.fillMaxSize()) {
         AlphaBackground(
@@ -36,12 +40,14 @@ fun Home(moviesViewModel: MoviesViewModel) {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.verticalScroll(rememberScrollState())
         ) {
-            TopMenu(moviesViewModel.searchQuery, moviesViewModel::onSearchQueryChanged)
+            TopMenu(searchQuery, onSearchChange)
             Spacer(Modifier.height(48.dp))
-            
+    
             Carousel(
-                moviesViewModel.movies,
-                carouselState,
+                movies,
+                rememberCarouselState { selectedIndex ->
+                    onSelectedMovieChange(selectedIndex)
+                },
                 getCarouselConfig(LocalConfiguration.current.screenWidthDp.dp)
             ) { movie ->
                 MoviePoster(movie)
@@ -73,6 +79,12 @@ private fun getCarouselConfig(screenWidth: Dp): CarouselConfig {
 fun HomePreview() {
     MovieAppTheme {
         val moviesViewModel = MoviesViewModel(LocalMoviesRepository())
-        Home(moviesViewModel)
+        Home(
+            moviesViewModel.movies,
+            moviesViewModel.selectedMovie,
+            moviesViewModel.searchQuery,
+            moviesViewModel::onSearchQueryChanged,
+            moviesViewModel::onSelectedMovieChanged
+        )
     }
 }

@@ -21,7 +21,13 @@ class MainActivity : AppCompatActivity() {
         setContent {
             MovieAppTheme {
                 Surface(color = MaterialTheme.colors.background) {
-                    Home(moviesViewModel)
+                    Home(
+                        moviesViewModel.movies,
+                        moviesViewModel.selectedMovie,
+                        moviesViewModel.searchQuery,
+                        moviesViewModel::onSearchQueryChanged,
+                        moviesViewModel::onSelectedMovieChanged
+                    )
                 }
             }
         }
