@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -79,10 +80,13 @@ private fun getCarouselConfig(screenWidth: Dp): CarouselConfig {
 fun HomePreview() {
     MovieAppTheme {
         val moviesViewModel = MoviesViewModel(LocalMoviesRepository())
+        val movies by moviesViewModel.movies.collectAsState()
+        val selectedMovie by moviesViewModel.selectedMovie.collectAsState()
+        val searchQuery by moviesViewModel.searchQuery.collectAsState()
         Home(
-            moviesViewModel.movies,
-            moviesViewModel.selectedMovie,
-            moviesViewModel.searchQuery,
+            movies,
+            selectedMovie,
+            searchQuery,
             moviesViewModel::onSearchQueryChanged,
             moviesViewModel::onSelectedMovieChanged
         )

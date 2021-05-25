@@ -6,6 +6,8 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.aherbel.movieapp.presentation.theme.MovieAppTheme
 import com.aherbel.movieapp.presentation.ui.Home
 import com.aherbel.movieapp.presentation.viewmodels.MoviesViewModel
@@ -21,10 +23,13 @@ class MainActivity : AppCompatActivity() {
         setContent {
             MovieAppTheme {
                 Surface(color = MaterialTheme.colors.background) {
+                    val movies by moviesViewModel.movies.collectAsState()
+                    val selectedMovie by moviesViewModel.selectedMovie2.collectAsState()
+                    val searchQuery by moviesViewModel.searchQuery.collectAsState()
                     Home(
-                        moviesViewModel.movies,
-                        moviesViewModel.selectedMovie,
-                        moviesViewModel.searchQuery,
+                        movies,
+                        selectedMovie,
+                        searchQuery,
                         moviesViewModel::onSearchQueryChanged,
                         moviesViewModel::onSelectedMovieChanged
                     )

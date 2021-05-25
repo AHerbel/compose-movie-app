@@ -1,55 +1,65 @@
 package com.aherbel.movieapp.presentation.viewmodels
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aherbel.movieapp.domain.model.Movie
 import com.aherbel.movieapp.domain.repositories.MoviesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MoviesViewModel @Inject constructor(
-    private val moviesRepository: MoviesRepository,
+    moviesRepository: MoviesRepository,
 ) : ViewModel() {
     
-    private var originalMovies: MutableList<Movie> by mutableStateOf(mutableListOf())
+    private val originalMovies = moviesRepository.getMovies().stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(2000),
+        emptyList()
+    )
+    private val selectedMovieIndex: MutableStateFlow<Int?> = MutableStateFlow(null)
     
-    var searchQuery: String by mutableStateOf("")
-        private set
+    private val _searchQuery: MutableStateFlow<String> = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
     
-    var selectedMovie: Movie? by mutableStateOf(originalMovies.firstOrNull())
-        private set
-    
-    var movies: List<Movie> by mutableStateOf(originalMovies)
-        private set
-    
-    init {
-        viewModelScope.launch {
-            originalMovies = moviesRepository.getMovies().toMutableList().also {
-                movies = it
-            }
-        }
-    }
-    
-    fun onSearchQueryChanged(searchQuery: String) {
-        this.searchQuery = searchQuery
-        movies = if (searchQuery.isEmpty()) {
+    val movies: StateFlow<List<Movie>> = originalMovies.combine(searchQuery) { originalMovies, searchQuery ->
+        if (searchQuery.isEmpty()) {
             originalMovies
         } else {
             originalMovies.filter { it.name.contains(searchQuery, true) }
         }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(2000),
+        emptyList()
+    )
+    
+    val selectedMovie: StateFlow<Movie?> = movies.combine(selectedMovieIndex) { movies, selectedMovieIndex ->
+        if (movies.isEmpty() || selectedMovieIndex == null) {
+            null
+        } else {
+            movies[selectedMovieIndex]
+        }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(2000),
+        null
+    )
+    
+    init {
+        viewModelScope.launch {
+            originalMovies.collect()
+        }
+    }
+    
+    fun onSearchQueryChanged(searchQuery: String) {
+        _searchQuery.value = searchQuery
     }
     
     fun onSelectedMovieChanged(movieIndex: Int) {
-        selectedMovie = if (movies.isEmpty()) {
-            null
-        } else {
-            movies[movieIndex]
-        }
+        selectedMovieIndex.value = movieIndex
     }
     
 }
