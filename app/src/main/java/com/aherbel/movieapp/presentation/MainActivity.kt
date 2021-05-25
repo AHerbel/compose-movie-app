@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
             MovieAppTheme {
                 Surface(color = MaterialTheme.colors.background) {
                     val movies by moviesViewModel.movies.collectAsState()
-                    val selectedMovie by moviesViewModel.selectedMovie2.collectAsState()
+                    val selectedMovie by moviesViewModel.selectedMovie.collectAsState()
                     val searchQuery by moviesViewModel.searchQuery.collectAsState()
                     Home(
                         movies,
